@@ -27,6 +27,7 @@ PHRASES = {
     "notepad": ("блокнот", "notepad"),
     "calculator": ("калькулятор", "калькулятора", "calculator"),
     "explorer": ("проводник", "проводника", "explorer"),
+    "google": ("google", "гугл"),
     "browser": ("браузер", "браузера", "browser"),
     "mail": ("почта", "почту", "почты", "mail", "outlook"),
     "vscode": ("код", "кода", "code", "visual studio", "vs code", "вс код"),
@@ -67,7 +68,7 @@ def find_classic_outlook() -> Path | None:
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    return """<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>AGAI Agent</title><style>body{font:18px system-ui;max-width:680px;margin:80px auto;padding:0 24px}input{box-sizing:border-box;font:inherit;padding:12px;width:100%}button{font:inherit;margin-top:12px;padding:10px 18px}#result{white-space:pre-wrap;margin-top:24px}</style></head><body><h1>AGAI Agent</h1><p>&#1053;&#1072;&#1087;&#1080;&#1096;&#1080;&#1090;&#1077; &#1082;&#1086;&#1084;&#1072;&#1085;&#1076;&#1091;, &#1085;&#1072;&#1087;&#1088;&#1080;&#1084;&#1087;&#1077;: &#171;&#1086;&#1090;&#1082;&#1088;&#1086;&#1081; &#1082;&#1086;&#1076;&#187;.</p><input id="message" autofocus placeholder="&#1054;&#1090;&#1082;&#1088;&#1086;&#1081; &#1082;&#1086;&#1076;"><button onclick="sendCommand()">&#1042;&#1099;&#1087;&#1086;&#1083;&#1085;&#1080;&#1090;&#1100;</button><div id="result"></div><script>async function sendCommand(){const text=document.getElementById('message').value;const response=await fetch('/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'text',text})});document.getElementById('result').textContent=await response.text()}document.getElementById('message').addEventListener('keydown',event=>{if(event.key==='Enter')sendCommand()})</script></body></html>"""
+    return """<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>AGAI Agent</title><style>body{font:18px system-ui;max-width:680px;margin:80px auto;padding:0 24px}input{box-sizing:border-box;font:inherit;padding:12px;width:100%}button{font:inherit;margin-top:12px;padding:10px 18px}#result{white-space:pre-wrap;margin-top:24px}</style></head><body><h1>AGAI Agent</h1><p>&#1053;&#1072;&#1087;&#1080;&#1096;&#1080;&#1090;&#1077; &#1082;&#1086;&#1084;&#1072;&#1085;&#1076;&#1091;, &#1085;&#1072;&#1087;&#1088;&#1080;&#1084;&#1087;&#1077;: &#171;&#1086;&#1090;&#1082;&#1088;&#1086;&#1081; &#1075;&#1091;&#1075;&#1083;&#187;.</p><input id="message" autofocus placeholder="&#1054;&#1090;&#1082;&#1088;&#1086;&#1081; Google"><button onclick="sendCommand()">&#1042;&#1099;&#1087;&#1086;&#1083;&#1085;&#1080;&#1090;&#1100;</button><div id="result"></div><script>async function sendCommand(){const text=document.getElementById('message').value;const response=await fetch('/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'text',text})});document.getElementById('result').textContent=await response.text()}document.getElementById('message').addEventListener('keydown',event=>{if(event.key==='Enter')sendCommand()})</script></body></html>"""
 
 
 @app.post("/command")
@@ -77,7 +78,7 @@ def command(cmd: Command):
         if not program:
             return {
                 "status": "not_understood",
-                "message": "Попробуйте: открой код, блокнот, калькулятор, проводник, браузер или почту.",
+                "message": "Попробуйте: открой Google, код, блокнот, калькулятор, проводник, браузер или почту.",
                 "received_text": cmd.text,
             }
         cmd = Command(action="open_program", text=program)
@@ -90,6 +91,10 @@ def command(cmd: Command):
         return {"status": "unknown_action"}
 
     program = normalize_phrase(cmd.text or "")
+
+    if program == "google":
+        webbrowser.open("https://www.google.com")
+        return {"status": "ok", "program": "google", "url": "https://www.google.com"}
 
     if program == "browser":
         webbrowser.open("https://www.google.com")
@@ -135,5 +140,5 @@ def command(cmd: Command):
 
     return {
         "status": "unknown_program",
-        "available_programs": [*PROGRAMS, "browser", "calculator", "mail", "vscode"],
+        "available_programs": [*PROGRAMS, "google", "browser", "calculator", "mail", "vscode"],
     }
